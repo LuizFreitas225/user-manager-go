@@ -1,20 +1,10 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/joho/godotenv"
+	"github.com/LuizFreitas225/user-manager-go/src/controller/middleware"
 )
 
 func main() {
-
-	// Carrega as variáveis de ambiente do arquivo .env
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Erro ao carregar o arquivo .env")
-		return
-	}
-
-	fmt.Println(os.Getenv("TESTE"))
+	managerRouter := middleware.CreateRouterManager()
+	managerRouter.Start()
 }
