@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"context"
+	"log"
 	"net/http"
 
 	"github.com/LuizFreitas225/user-manager-go/src/controller/login"
@@ -14,7 +16,7 @@ type ManagerRouter struct {
 	LoginController login.Controller
 }
 
-func (managerRouter *ManagerRouter) Start() {
+func (managerRouter *ManagerRouter) Start(ctx context.Context) {
 
 	// originsOk := handlers.AllowedOrigins([]string{"*"})
 	// methodsOk := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "PUT", "DELETE"})
@@ -23,14 +25,30 @@ func (managerRouter *ManagerRouter) Start() {
 
 	managerRouter.InitRoutes()
 
+	// Cria o servidor HTTP
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: managerRouter.Router,
+	}
+
+	//Roda o servidor dentro de uma Goroutine
 	go func() {
-		err := http.ListenAndServe("localhost:8080", managerRouter.Router)
+		log.Println("Servidor HTTP iniciado na porta 8080")
+		err := server.ListenAndServe()
 
 		if err != nil {
-			println("Erro ao executar aplicação: ", err)
+			println(err.Error())
 		}
 	}()
 
+	<-ctx.Done()
+	log.Println("Contexto cancelado. Desligando servidor...")
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Erro ao desligar servidor: %v", err)
+	} else {
+		log.Println("Servidor desligado com sucesso")
+	}
 }
 
 func (managerRouter *ManagerRouter) InitRoutes() {
@@ -41,7 +59,7 @@ func (managerRouter *ManagerRouter) InitRoutes() {
 func (managerRouter *ManagerRouter) initUserRoutes() {
 	userSubRouter := managerRouter.Router.PathPrefix("/user").Subrouter()
 
-	userSubRouter.HandleFunc("/create/:userId", managerRouter.UserController.Find).Methods(http.MethodPost)
+	userSubRouter.HandleFunc("/create/", managerRouter.UserController.Find).Methods(http.MethodPost)
 	userSubRouter.HandleFunc("/find/", managerRouter.UserController.Find).Methods(http.MethodGet)
 	userSubRouter.HandleFunc("/update/:userId", managerRouter.UserController.Find).Methods(http.MethodPut)
 	userSubRouter.HandleFunc("/delete/:userId", managerRouter.UserController.Find).Methods(http.MethodDelete)
