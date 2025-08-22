@@ -60,10 +60,10 @@ func (managerRouter *ManagerRouter) initUserRoutes() {
 	userSubRouter := managerRouter.Router.PathPrefix("/user").Subrouter()
 
 	userSubRouter.HandleFunc("/create/", managerRouter.UserController.Create).Methods(http.MethodPost)
-	userSubRouter.HandleFunc("/findById/", managerRouter.UserController.FindById).Methods(http.MethodGet)
+	userSubRouter.HandleFunc("/findById/{id}", managerRouter.UserController.FindById).Methods(http.MethodGet)
 	userSubRouter.HandleFunc("/search/", managerRouter.UserController.Search).Methods(http.MethodGet)
-	userSubRouter.HandleFunc("/update/:userId", managerRouter.UserController.Update).Methods(http.MethodPut)
-	userSubRouter.HandleFunc("/delete/:userId", managerRouter.UserController.Delete).Methods(http.MethodDelete)
+	userSubRouter.HandleFunc("/update/{id}", managerRouter.UserController.Update).Methods(http.MethodPut)
+	userSubRouter.HandleFunc("/delete/{id}", managerRouter.UserController.Delete).Methods(http.MethodDelete)
 }
 
 func (managerRouter *ManagerRouter) initLoginRoutes() {

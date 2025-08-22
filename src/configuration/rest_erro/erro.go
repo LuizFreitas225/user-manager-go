@@ -29,12 +29,20 @@ func NewRestError(message, err string, code int, causes []string) *RestError {
 	}
 }
 
-func NewBadRequestError(message string, causes []string) *RestError {
+func NewBadRequestErrorWithCauses(message string, causes []string) *RestError {
 	return &RestError{
 		Message: message,
 		Err:     "Bad Request",
 		Code:    http.StatusBadRequest,
 		Causes:  causes,
+	}
+}
+
+func NewBadRequestError(message string) *RestError {
+	return &RestError{
+		Message: message,
+		Err:     "Bad Request",
+		Code:    http.StatusBadRequest,
 	}
 }
 
@@ -71,3 +79,5 @@ func NewForbiddenError(message string) *RestError {
 		Code:    http.StatusForbidden,
 	}
 }
+
+
