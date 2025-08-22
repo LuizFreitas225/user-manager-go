@@ -9,7 +9,7 @@ import (
 func CreateRouterManager() ManagerRouter {
 	return ManagerRouter{
 		Router:          singleton.GetInstance().Router,
-		UserController:  &user.UserController{},
+		UserController:  user.CreateUserController(),
 		LoginController: &login.LoginController{},
 	}
 }

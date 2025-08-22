@@ -33,7 +33,6 @@ func (managerRouter *ManagerRouter) Start(ctx context.Context) {
 
 	//Roda o servidor dentro de uma Goroutine
 	go func() {
-		log.Println("Servidor HTTP iniciado na porta 8080")
 		err := server.ListenAndServe()
 
 		if err != nil {
@@ -41,6 +40,7 @@ func (managerRouter *ManagerRouter) Start(ctx context.Context) {
 		}
 	}()
 
+	log.Println("Servidor HTTP iniciado na porta 8080")
 	<-ctx.Done()
 	log.Println("Contexto cancelado. Desligando servidor...")
 

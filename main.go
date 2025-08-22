@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/LuizFreitas225/user-manager-go/src/controller/middleware"
+	"github.com/LuizFreitas225/user-manager-go/src/middleware"
 )
 
 func main() {

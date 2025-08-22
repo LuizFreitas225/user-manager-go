@@ -23,9 +23,18 @@ BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION update_last_modified();
 
+CREATE EXTENSION IF NOT EXISTS unaccent;
 
 ---Insert Inicial
 INSERT INTO users (name, email, password)
 VALUES ('Luiz Nicolau', 'luiz.nicolau@email.com', 'senha');
 
-
+INSERT INTO users (name, email, password)
+VALUES 
+  ('José da Silva', 'jose.silva@email.com', 'senha123'),
+  ('Jose da Silva', 'jose.silva2@email.com', 'senha123'),
+  ('João Pereira', 'joao.pereira@email.com', 'senha123'),
+  ('Joao Pereira', 'joao.pereira2@email.com', 'senha123'),
+  ('Maria Eduarda', 'maria.eduarda@email.com', 'senha123'),
+  ('Lucas', 'lucas@email.com', 'senha123'),
+  ('luças', 'luças@email.com', 'senha123');
