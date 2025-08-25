@@ -102,37 +102,28 @@ func (ur *UserRepository) Delete(input data.InputUserOfDelete) error {
 	return nil
 }
 
-func (ur *UserRepository) Create(input data.InputUserOfCreate) error {
+func (ur *UserRepository) Create(input data.InputUserOfCreate) (data.OutputUserOfCreate, error) {
 
 	user, err := ur.findByEmail(input.Email)
 
 	if err != nil {
-		return err
+		return data.OutputUserOfCreate{}, err
 	}
-    if user.ID != 0 {
-     	return manager_error.NewBadRequestError("Email is already in use.")
-    }
+	if user.ID != 0 {
+		return data.OutputUserOfCreate{}, manager_error.NewBadRequestError("Email is already in use.")
+	}
 
-	// Executa o delete diretamente
-	query := fmt.Sprintf("INSERT INTO %s (name, email, password) values($id, $1, $2, $3)", model.UserTableName)
+	query := fmt.Sprintf("INSERT INTO %s (name, email, password) values($1, $2, $3) RETURNING id, create_date, last_modified_date, name, email", model.UserTableName)
 
-	result, err := ur.Db.Exec(query, input.Name, input.Email, input.Password)
+	var createdUser data.OutputUserOfCreate
+	err = ur.Db.QueryRow(query, input.Name, input.Email, input.Password).
+		Scan(&createdUser.ID, &createdUser.CreateDate, &createdUser.LastModifiedDate, &createdUser.Name, &createdUser.Email)
 	if err != nil {
-		return manager_error.NewInternalServerError("Failed to create user.", []string{err.Error()})
+		return data.OutputUserOfCreate{}, manager_error.NewInternalServerError("Failed to create user.", []string{err.Error()})
 	}
 
-	// Verifica se algum registro foi criado
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return manager_error.NewInternalServerError("Failed to get affected rows.", []string{err.Error()})
-	}
-
-	if rowsAffected == 0 {
-		return manager_error.NewBadRequestError("User not created, try again later")
-	}
-
-	return nil
-} 
+	return createdUser, nil
+}
 
 func (ur *UserRepository) findByEmail(email string) (data.OutputUserOfFindById, error) {
 

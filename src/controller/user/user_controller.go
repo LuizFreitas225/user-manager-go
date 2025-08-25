@@ -9,15 +9,38 @@ import (
 	httpConstant "github.com/LuizFreitas225/user-manager-go/src/controller/constant"
 	"github.com/LuizFreitas225/user-manager-go/src/controller/user/data"
 	"github.com/LuizFreitas225/user-manager-go/src/repository/user"
+	"github.com/go-playground/validator"
 	"github.com/gorilla/mux"
 )
 
 type UserController struct {
 	Repository user.Repository
+	Validate   validator.Validate
 }
 
-func (*UserController) Create(w http.ResponseWriter, r *http.Request) {
+func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
+	var input data.InputUserOfCreate
 
+	// Decodifica o JSON do body dentro do input
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := uc.Validate.Struct(input); err != nil {
+		uc.writeError(&w, manager_error.NewBadRequestError(err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	createdUser, err := uc.Repository.Create(input)
+	if err != nil {
+		uc.writeError(&w, err, http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
+		json, _ := json.Marshal(createdUser)
+		w.Write(json)
+	}
 }
 
 func (uc *UserController) FindById(w http.ResponseWriter, r *http.Request) {

@@ -3,9 +3,9 @@ package data
 import "time"
 
 type InputUserOfCreate struct {
-	Name             string    `json:"name"`
-	Email            string    `json:"email"`
-	Password         string    `json:"password"`
+	Name     string `json:"name" validate:"required,min=3"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6"`
 }
 
 type OutputUserOfCreate struct {
@@ -14,6 +14,4 @@ type OutputUserOfCreate struct {
 	LastModifiedDate time.Time `json:"last_modified_date"`
 	Name             string    `json:"name"`
 	Email            string    `json:"email"`
-	Password         string    `json:"password"`
-
 }
