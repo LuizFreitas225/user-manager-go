@@ -62,7 +62,7 @@ func (managerRouter *ManagerRouter) initUserRoutes() {
 	userSubRouter.HandleFunc("/create/", managerRouter.UserController.Create).Methods(http.MethodPost)
 	userSubRouter.HandleFunc("/findById/{id}", managerRouter.UserController.FindById).Methods(http.MethodGet)
 	userSubRouter.HandleFunc("/search/", managerRouter.UserController.Search).Methods(http.MethodGet)
-	userSubRouter.HandleFunc("/update/{id}", managerRouter.UserController.Update).Methods(http.MethodPut)
+	userSubRouter.HandleFunc("/update/", managerRouter.UserController.Update).Methods(http.MethodPut)
 	userSubRouter.HandleFunc("/delete/{id}", managerRouter.UserController.Delete).Methods(http.MethodDelete)
 }
 

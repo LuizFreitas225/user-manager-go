@@ -125,6 +125,38 @@ func (ur *UserRepository) Create(input data.InputUserOfCreate) (data.OutputUserO
 	return createdUser, nil
 }
 
+func (ur *UserRepository) Update(input data.InputUserOfUpdate) (data.OutputUserOfUpdate, error) {
+
+	_, err := ur.FindById(data.InputUserOfFindById{ID: input.ID})
+
+	if err != nil {
+		return data.OutputUserOfUpdate{}, err
+	}
+
+	currentUser, err := ur.findByEmail(input.Email)
+
+	if err != nil {
+		return data.OutputUserOfUpdate{}, manager_error.NewInternalServerError("Failed to update user.", []string{err.Error()})
+	}
+	if currentUser.ID != 0 && currentUser.ID != input.ID {
+		return data.OutputUserOfUpdate{}, manager_error.NewBadRequestError("Email is already in use.")
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET name = $1, email = $2, password = $3 "+
+		"WHERE id = $4 "+
+		"RETURNING id, create_date, last_modified_date, name, email",
+		model.UserTableName,
+	)
+	var updatedUser data.OutputUserOfUpdate
+	err = ur.Db.QueryRow(query, input.Name, input.Email, input.Password, input.ID).
+		Scan(&updatedUser.ID, &updatedUser.CreateDate, &updatedUser.LastModifiedDate, &updatedUser.Name, &updatedUser.Email)
+	if err != nil {
+		return data.OutputUserOfUpdate{}, manager_error.NewInternalServerError("Failed to update user.", []string{err.Error()})
+	}
+
+	return updatedUser, nil
+}
+
 func (ur *UserRepository) findByEmail(email string) (data.OutputUserOfFindById, error) {
 
 	query := fmt.Sprintf("SELECT id, create_date, last_modified_date, name, email FROM %s WHERE email = $1", model.UserTableName)

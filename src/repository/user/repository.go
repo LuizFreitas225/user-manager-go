@@ -7,4 +7,5 @@ type Repository interface {
 	FindById(input data.InputUserOfFindById) (data.OutputUserOfFindById, error)
 	Delete(input data.InputUserOfDelete) error
 	Create(input data.InputUserOfCreate) (data.OutputUserOfCreate, error)
+	Update(input data.InputUserOfUpdate) (data.OutputUserOfUpdate, error)
 }

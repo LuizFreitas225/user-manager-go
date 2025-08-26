@@ -7,7 +7,7 @@ type InputUserOfFindById struct {
 }
 
 type OutputUserOfFindById struct {
-	ID               int64     `json:"id"`
+	ID               int    `json:"id"`
 	CreateDate       time.Time `json:"create_date"`
 	LastModifiedDate time.Time `json:"last_modified_date"`
 	Name             string    `json:"name"`

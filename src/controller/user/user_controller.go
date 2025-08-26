@@ -28,13 +28,18 @@ func (uc *UserController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := uc.Validate.Struct(input); err != nil {
-		uc.writeError(&w, manager_error.NewBadRequestError(err.Error()), http.StatusInternalServerError)
+		uc.writeError(&w, manager_error.NewBadRequestError(err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	createdUser, err := uc.Repository.Create(input)
 	if err != nil {
-		uc.writeError(&w, err, http.StatusInternalServerError)
+		if restErr, isRestErr := err.(*manager_error.RestError); isRestErr {
+			uc.writeError(&w, err, restErr.Code)
+		} else {
+			uc.writeError(&w, err, http.StatusInternalServerError)
+		}
+		return
 	} else {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
@@ -59,12 +64,14 @@ func (uc *UserController) FindById(w http.ResponseWriter, r *http.Request) {
 	result, err := uc.Repository.FindById(input)
 
 	if err != nil {
-		uc.writeError(&w, err, http.StatusInternalServerError)
+		if restErr, isRestErr := err.(*manager_error.RestError); isRestErr {
+			uc.writeError(&w, err, restErr.Code)
+		} else {
+			uc.writeError(&w, err, http.StatusInternalServerError)
+		}
+		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
-		json, _ := json.Marshal(result)
-		w.Write(json)
+		uc.writeResultOK(w, result)
 	}
 }
 
@@ -79,17 +86,42 @@ func (uc *UserController) Search(w http.ResponseWriter, r *http.Request) {
 	result, err := uc.Repository.Search(input)
 
 	if err != nil {
-		uc.writeError(&w, err, http.StatusInternalServerError)
+		if restErr, isRestErr := err.(*manager_error.RestError); isRestErr {
+			uc.writeError(&w, err, restErr.Code)
+		} else {
+			uc.writeError(&w, err, http.StatusInternalServerError)
+		}
+		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
-		json, _ := json.Marshal(result)
-		w.Write(json)
+		uc.writeResultOK(w, result)
 	}
 }
 
-func (*UserController) Update(w http.ResponseWriter, r *http.Request) {
+func (uc *UserController) Update(w http.ResponseWriter, r *http.Request) {
+	var input data.InputUserOfUpdate
 
+	// Decodifica o JSON do body dentro do input
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := uc.Validate.Struct(input); err != nil {
+		uc.writeError(&w, manager_error.NewBadRequestError(err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	updatedUser, err := uc.Repository.Update(input)
+	if err != nil {
+		if restErr, isRestErr := err.(*manager_error.RestError); isRestErr {
+			uc.writeError(&w, err, restErr.Code)
+		} else {
+			uc.writeError(&w, err, http.StatusInternalServerError)
+		}
+		return
+	} else {
+		uc.writeResultOK(w, updatedUser)
+	}
 }
 
 func (uc *UserController) Delete(w http.ResponseWriter, r *http.Request) {
@@ -125,4 +157,17 @@ func (*UserController) writeError(w *http.ResponseWriter, err error, status int)
 	writer.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
 	json, _ := json.Marshal(err)
 	writer.Write(json)
+}
+
+func (*UserController) writeResultOK(w http.ResponseWriter, result any) {
+	w.Header().Add(httpConstant.HeaderContentType, httpConstant.ContentTypeJSON)
+	w.WriteHeader(http.StatusOK)
+
+	jsonData, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, "Erro to convert resutl in json", http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(jsonData)
 }
